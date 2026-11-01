@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
+import { apiRequest, getCurrentUser } from './api'
 
 function App() {
   const [isLogin, setIsLogin] = useState(true)
@@ -9,6 +10,7 @@ function App() {
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [loggedInUser, setLoggedInUser] = useState(null)
+  const [checkingSession, setCheckingSession] = useState(true)
 
   const [subjects, setSubjects] = useState([])
   const [subjectName, setSubjectName] = useState('')
@@ -32,6 +34,23 @@ function App() {
     })
   }
 
+  // Restore the login session when the page opens or refreshes.
+  useEffect(() => {
+    async function restoreSession() {
+      try {
+        const user = await getCurrentUser()
+        setLoggedInUser(user)
+      } catch (error) {
+        console.error('Unable to restore session:', error)
+      } finally {
+        setCheckingSession(false)
+      }
+    }
+
+    restoreSession()
+  }, [])
+
+  // Load the user's subjects and tasks after login.
   useEffect(() => {
     if (loggedInUser) {
       loadSubjects()
@@ -41,25 +60,39 @@ function App() {
 
   async function loadSubjects() {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/subjects/${loggedInUser.id}`
+      const response = await apiRequest(
+        `/subjects/${loggedInUser.id}`
       )
+
       const data = await response.json()
-      setSubjects(data)
+
+      if (response.ok) {
+        setSubjects(data)
+      } else {
+        setMessage(data.message || 'Unable to load subjects.')
+      }
     } catch (error) {
       console.error('Unable to load subjects:', error)
+      setMessage('Unable to load subjects.')
     }
   }
 
   async function loadTasks() {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/tasks/${loggedInUser.id}`
+      const response = await apiRequest(
+        `/tasks/${loggedInUser.id}`
       )
+
       const data = await response.json()
-      setTasks(data)
+
+      if (response.ok) {
+        setTasks(data)
+      } else {
+        setMessage(data.message || 'Unable to load tasks.')
+      }
     } catch (error) {
       console.error('Unable to load tasks:', error)
+      setMessage('Unable to load tasks.')
     }
   }
 
@@ -69,11 +102,10 @@ function App() {
     if (!subjectName.trim()) return
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/subjects', {
+      const response = await apiRequest('/subjects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: loggedInUser.id,
           subject_name: subjectName
         })
       })
@@ -92,8 +124,8 @@ function App() {
 
   async function deleteSubject(subjectId) {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/subjects/${subjectId}`,
+      const response = await apiRequest(
+        `/subjects/${subjectId}`,
         { method: 'DELETE' }
       )
 
@@ -118,11 +150,10 @@ function App() {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/tasks', {
+      const response = await apiRequest('/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: loggedInUser.id,
           subject_id: Number(selectedSubject),
           task_name: taskName,
           deadline: deadline
@@ -145,13 +176,12 @@ function App() {
 
   async function updateTask(taskId, completed) {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/tasks/${taskId}`,
+      const response = await apiRequest(
+        `/tasks/${taskId}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: loggedInUser.id,
             completed: completed
           })
         }
@@ -170,15 +200,9 @@ function App() {
 
   async function deleteTask(taskId) {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/tasks/${taskId}`,
-        {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: loggedInUser.id
-          })
-        }
+      const response = await apiRequest(
+        `/tasks/${taskId}`,
+        { method: 'DELETE' }
       )
 
       const result = await response.json()
@@ -192,18 +216,41 @@ function App() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      const response = await apiRequest('/logout', {
+        method: 'POST'
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        setMessage(result.message || 'Unable to log out.')
+        return
+      }
+
+      setMessage('')
+      setLoggedInUser(null)
+      setSubjects([])
+      setTasks([])
+      setTaskFilter('All')
+    } catch (error) {
+      setMessage('Unable to connect to the server.')
+    }
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setMessage('Please wait...')
 
-    const endpoint = isLogin ? 'login' : 'register'
+    const endpoint = isLogin ? '/login' : '/register'
 
     const userData = isLogin
       ? { email, password }
       : { name, email, password }
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+      const response = await apiRequest(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -214,6 +261,13 @@ function App() {
 
       if (response.ok && isLogin) {
         setLoggedInUser(result.user)
+        setPassword('')
+      }
+
+      if (response.ok && !isLogin) {
+        setIsLogin(true)
+        setName('')
+        setPassword('')
       }
     } catch (error) {
       setMessage('Unable to connect to the server.')
@@ -296,6 +350,17 @@ function App() {
     }
   }
 
+  // Show a loading message while checking the saved login session.
+  if (checkingSession) {
+    return (
+      <div className="container">
+        <div className="auth-card">
+          <h2>Loading StudySync...</h2>
+        </div>
+      </div>
+    )
+  }
+
   if (loggedInUser) {
     return (
       <div className="dashboard">
@@ -332,15 +397,7 @@ function App() {
             </button>
           </nav>
 
-          <button
-            onClick={() => {
-              setLoggedInUser(null)
-              setSubjects([])
-              setTasks([])
-              setMessage('')
-              setTaskFilter('All')
-            }}
-          >
+          <button onClick={handleLogout}>
             Logout
           </button>
         </aside>

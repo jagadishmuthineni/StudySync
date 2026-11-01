@@ -13,3 +13,6 @@ frontend/dist/
 # Environment variables
 .env
 .env.*
+
+# Flask session secret
+backend/.secret_key
