@@ -97,7 +97,7 @@ function App() {
     }
   }
 
-  // Add a subject and show its message below the subject form.
+  // Add a subject without making an extra GET request.
   async function addSubject(event) {
     event.preventDefault()
     setSubjectMessage('')
@@ -120,8 +120,12 @@ function App() {
       setSubjectMessage(result.message)
 
       if (response.ok) {
+        setSubjects((previousSubjects) => [
+          ...previousSubjects,
+          result.subject
+        ])
+
         setSubjectName('')
-        loadSubjects()
       }
     } catch (error) {
       setSubjectMessage('Unable to add subject. Please try again.')
