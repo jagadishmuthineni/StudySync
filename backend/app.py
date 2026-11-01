@@ -277,7 +277,6 @@ def get_subjects(user_id):
     finally:
         connection.close()
 
-
 @app.route("/subjects", methods=["POST"])
 @login_required
 def add_subject():
@@ -287,12 +286,27 @@ def add_subject():
     if not isinstance(subject_name, str) or not subject_name.strip():
         return jsonify({"message": "Subject name is required"}), 400
 
+    subject_name = subject_name.strip()
+
     connection = get_db_connection()
 
     try:
+        # Check whether this user already has the subject.
+        existing_subject = connection.execute(
+            """SELECT subject_id FROM subjects
+               WHERE user_id = ? AND LOWER(subject_name) = LOWER(?)""",
+            (session["user_id"], subject_name)
+        ).fetchone()
+
+        if existing_subject:
+            return jsonify({
+                "message": "This subject already exists"
+            }), 409
+
+        # Add the subject if it does not already exist.
         connection.execute(
             "INSERT INTO subjects (user_id, subject_name) VALUES (?, ?)",
-            (session["user_id"], subject_name.strip())
+            (session["user_id"], subject_name)
         )
         connection.commit()
 

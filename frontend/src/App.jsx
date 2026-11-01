@@ -9,6 +9,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [subjectMessage, setSubjectMessage] = useState('')
   const [loggedInUser, setLoggedInUser] = useState(null)
   const [checkingSession, setCheckingSession] = useState(true)
 
@@ -50,7 +51,7 @@ function App() {
     restoreSession()
   }, [])
 
-  // Load the user's subjects and tasks after login.
+  // Load subjects and tasks after login.
   useEffect(() => {
     if (loggedInUser) {
       loadSubjects()
@@ -96,10 +97,15 @@ function App() {
     }
   }
 
+  // Add a subject and show its message below the subject form.
   async function addSubject(event) {
     event.preventDefault()
+    setSubjectMessage('')
 
-    if (!subjectName.trim()) return
+    if (!subjectName.trim()) {
+      setSubjectMessage('Please enter a subject name.')
+      return
+    }
 
     try {
       const response = await apiRequest('/subjects', {
@@ -111,14 +117,14 @@ function App() {
       })
 
       const result = await response.json()
-      setMessage(result.message)
+      setSubjectMessage(result.message)
 
       if (response.ok) {
         setSubjectName('')
         loadSubjects()
       }
     } catch (error) {
-      setMessage('Unable to add subject.')
+      setSubjectMessage('Unable to add subject. Please try again.')
     }
   }
 
@@ -130,14 +136,14 @@ function App() {
       )
 
       const result = await response.json()
-      setMessage(result.message)
+      setSubjectMessage(result.message)
 
       if (response.ok) {
         loadSubjects()
         loadTasks()
       }
     } catch (error) {
-      setMessage('Unable to delete subject.')
+      setSubjectMessage('Unable to delete subject.')
     }
   }
 
@@ -230,6 +236,7 @@ function App() {
       }
 
       setMessage('')
+      setSubjectMessage('')
       setLoggedInUser(null)
       setSubjects([])
       setTasks([])
@@ -350,7 +357,7 @@ function App() {
     }
   }
 
-  // Show a loading message while checking the saved login session.
+  // Show loading while restoring the login session.
   if (checkingSession) {
     return (
       <div className="container">
@@ -449,6 +456,10 @@ function App() {
 
               <button type="submit">Add Subject</button>
             </form>
+
+            <p role="status" aria-live="polite">
+              {subjectMessage}
+            </p>
 
             {subjects.length === 0 ? (
               <p>No subjects added yet.</p>
@@ -581,7 +592,7 @@ function App() {
             )}
           </section>
 
-          {/* Interactive Progress Dashboard */}
+          {/* Progress Dashboard */}
           <section
             ref={progressRef}
             id="progress"
@@ -590,7 +601,6 @@ function App() {
             <h2>My Study Progress</h2>
             <p>Track your study performance and completion status.</p>
 
-            {/* Overall statistics */}
             <div className="dashboard-cards">
               <div className="dashboard-card">
                 <h3>Total Tasks</h3>
@@ -611,7 +621,6 @@ function App() {
               </div>
             </div>
 
-            {/* Overall progress bar */}
             <div className="progress-panel">
               <h3>Overall Completion</h3>
               <h2>{progressPercentage}%</h2>
@@ -628,7 +637,6 @@ function App() {
               </p>
             </div>
 
-            {/* Subject-wise progress */}
             <div className="progress-panel">
               <h3>Subject-wise Progress</h3>
 
@@ -657,7 +665,6 @@ function App() {
               )}
             </div>
 
-            {/* Upcoming deadlines */}
             <div className="progress-panel">
               <h3>Upcoming Deadlines</h3>
 
@@ -676,7 +683,6 @@ function App() {
               )}
             </div>
 
-            {/* Progress insights */}
             <div className="progress-panel">
               <h3>Your Study Insights</h3>
               <p>{progressMessage}</p>

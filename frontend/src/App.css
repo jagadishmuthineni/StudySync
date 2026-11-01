@@ -1,9 +1,16 @@
 
-/* =================================
-   STUDYSYNC - MODERN DESIGN
-================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #6655e8;
+  --primary-dark: #5140cf;
+  --navy: #191936;
+  --text: #252641;
+  --muted: #85869c;
+  --background: #f5f6fc;
+  --white: #ffffff;
+  --border: #ececf4;
+}
 
 * {
   margin: 0;
@@ -11,15 +18,9 @@
   box-sizing: border-box;
 }
 
-:root {
-  --primary: #6655e8;
-  --primary-dark: #5140cf;
-  --navy: #171735;
-  --text: #252641;
-  --muted: #85869c;
-  --background: #f5f6fc;
-  --white: #ffffff;
-  --border: #ececf4;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 25px;
 }
 
 body {
@@ -28,9 +29,7 @@ body {
   color: var(--text);
 }
 
-/* =================================
-   LOGIN AND REGISTER
-================================= */
+/* LOGIN AND REGISTER */
 
 .container {
   min-height: 100vh;
@@ -73,9 +72,7 @@ body {
   color: var(--text);
 }
 
-/* =================================
-   INPUTS AND FORMS
-================================= */
+/* INPUTS AND FORMS */
 
 form {
   display: flex;
@@ -104,9 +101,7 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(102, 85, 232, 0.10);
 }
 
-/* =================================
-   BUTTONS
-================================= */
+/* BUTTONS */
 
 button {
   padding: 12px 18px;
@@ -130,8 +125,6 @@ button:active {
   transform: translateY(0);
 }
 
-/* LOGIN SWITCH */
-
 .switch {
   margin-top: 24px;
   font-size: 13px;
@@ -144,9 +137,7 @@ button:active {
   font-weight: 700;
 }
 
-/* =================================
-   DASHBOARD LAYOUT
-================================= */
+/* DASHBOARD LAYOUT */
 
 .dashboard {
   display: flex;
@@ -154,9 +145,7 @@ button:active {
   background: var(--background);
 }
 
-/* =================================
-   SIDEBAR
-================================= */
+/* SIDEBAR */
 
 .sidebar {
   width: 255px;
@@ -181,38 +170,51 @@ button:active {
   letter-spacing: -1px;
 }
 
+/* Supports both paragraph and button navigation */
+
 .sidebar nav {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.sidebar nav p {
+.sidebar nav p,
+.sidebar nav button {
+  display: block;
+  width: 100%;
+  text-align: left;
   padding: 15px 17px;
   border-radius: 10px;
   color: #c4c3df;
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   transition: 0.2s ease;
+  box-shadow: none;
 }
 
-.sidebar nav p:first-child {
+.sidebar nav p:first-child,
+.sidebar nav button:first-child {
   background: linear-gradient(135deg, #7564f2, #5744d5);
   color: white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-.sidebar nav p:hover {
+.sidebar nav p:hover,
+.sidebar nav button:hover {
   background: rgba(255, 255, 255, 0.10);
   color: white;
+  transform: translateX(3px);
+  box-shadow: none;
 }
 
-.sidebar nav p:first-child:hover {
+.sidebar nav p:first-child:hover,
+.sidebar nav button:first-child:hover {
   background: linear-gradient(135deg, #7564f2, #5744d5);
 }
 
-.sidebar button {
+.sidebar > button {
   margin-top: auto;
   background: rgba(255, 255, 255, 0.10);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -221,13 +223,11 @@ button:active {
   border-radius: 10px;
 }
 
-.sidebar button:hover {
+.sidebar > button:hover {
   background: #6655e8;
 }
 
-/* =================================
-   MAIN CONTENT
-================================= */
+/* MAIN CONTENT */
 
 .main-content {
   flex: 1;
@@ -238,7 +238,7 @@ button:active {
 }
 
 .main-content > h1 {
-  font-size: 30px;
+  font-size: clamp(25px, 3vw, 34px);
   font-weight: 800;
   color: #242342;
   margin-bottom: 10px;
@@ -251,9 +251,7 @@ button:active {
   margin-bottom: 35px;
 }
 
-/* =================================
-   DASHBOARD SUMMARY CARDS
-================================= */
+/* SUMMARY CARDS */
 
 .dashboard-cards {
   display: grid;
@@ -309,9 +307,7 @@ button:active {
   font-size: 12px;
 }
 
-/* =================================
-   DASHBOARD SECTIONS
-================================= */
+/* DASHBOARD SECTIONS */
 
 .dashboard-section {
   background: white;
@@ -320,6 +316,7 @@ button:active {
   border-radius: 17px;
   margin-bottom: 25px;
   box-shadow: 0 5px 20px rgba(39, 38, 85, 0.035);
+  scroll-margin-top: 25px;
 }
 
 .dashboard-section h2 {
@@ -329,9 +326,7 @@ button:active {
   margin-bottom: 23px;
 }
 
-/* =================================
-   SUBJECT AND TASK FORMS
-================================= */
+/* SUBJECT AND TASK FORMS */
 
 .dashboard-section form {
   display: flex;
@@ -354,9 +349,7 @@ button:active {
   height: 47px;
 }
 
-/* =================================
-   SUBJECT AND TASK LISTS
-================================= */
+/* SUBJECT AND TASK LISTS */
 
 .dashboard-section ul {
   list-style: none;
@@ -381,10 +374,6 @@ button:active {
   background: #faf9ff;
 }
 
-.dashboard-section li:last-child {
-  border-bottom: 1px solid #eeeeF5;
-}
-
 .dashboard-section li p {
   color: var(--muted);
   font-size: 12px;
@@ -406,9 +395,74 @@ button:active {
   min-width: 150px;
 }
 
-/* =================================
-   RESPONSIVE DESIGN
-================================= */
+/* PROGRESS DASHBOARD */
+
+.progress-panel {
+  background: white;
+  padding: 28px;
+  margin-top: 22px;
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  box-shadow: 0 5px 20px rgba(39, 38, 85, 0.035);
+}
+
+.progress-panel h2 {
+  margin-bottom: 15px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 14px;
+  background: #e9e9f2;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7564f2, #35bd91);
+  border-radius: 20px;
+  transition: width 0.5s ease;
+}
+
+.subject-fill {
+  background: linear-gradient(90deg, #3b82f6, #6655e8);
+}
+
+.subject-progress {
+  margin-top: 22px;
+}
+
+.subject-progress-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.subject-progress p {
+  font-size: 13px;
+  color: #666;
+}
+
+/* TASK FILTERS */
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.filter-buttons button {
+  border: none;
+  padding: 9px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+/* RESPONSIVE DESIGN */
 
 @media (max-width: 1000px) {
   .main-content {
@@ -453,11 +507,13 @@ button:active {
     gap: 5px;
   }
 
-  .sidebar nav p {
+  .sidebar nav p,
+  .sidebar nav button {
+    width: auto;
     padding: 11px 13px;
   }
 
-  .sidebar button {
+  .sidebar > button {
     margin-top: 18px;
   }
 
@@ -483,7 +539,8 @@ button:active {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-section {
+  .dashboard-section,
+  .progress-panel {
     padding: 20px;
   }
 
@@ -505,68 +562,4 @@ button:active {
   .auth-card {
     padding: 35px 24px;
   }
-}
-
-/* StudySync Progress Dashboard */
-
-.progress-panel {
-  background: white;
-  padding: 22px;
-  margin-top: 22px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-}
-
-.progress-panel h2 {
-  margin-bottom: 15px;
-}
-
-.progress-track {
-  width: 100%;
-  height: 14px;
-  background: #e5e7eb;
-  border-radius: 20px;
-  overflow: hidden;
-  margin: 12px 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: #16a34a;
-  border-radius: 20px;
-  transition: width 0.5s ease;
-}
-
-.subject-fill {
-  background: #3b82f6;
-}
-
-.subject-progress {
-  margin-top: 22px;
-}
-
-.subject-progress-heading {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.subject-progress p {
-  font-size: 13px;
-  color: #666;
-}
-
-.filter-buttons {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-  flex-wrap: wrap;
-}
-
-.filter-buttons button {
-  border: none;
-  padding: 9px 18px;
-  border-radius: 7px;
-  cursor: pointer;
 }
