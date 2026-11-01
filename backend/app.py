@@ -172,7 +172,120 @@ def delete_subject(subject_id):
         return jsonify({"message": "Subject not found"}), 404
 
     return jsonify({"message": "Subject deleted successfully!"}), 200
+# Get all tasks belonging to a student
+@app.route('/tasks/<int:user_id>', methods=['GET'])
+def get_tasks(user_id):
+    connection = get_db_connection()
 
+    tasks = connection.execute("""
+        SELECT
+            tasks.task_id,
+            tasks.task_name,
+            tasks.deadline,
+            tasks.completed,
+            subjects.subject_name,
+            subjects.subject_id
+        FROM tasks
+        JOIN subjects
+        ON tasks.subject_id = subjects.subject_id
+        WHERE subjects.user_id = ?
+        ORDER BY tasks.deadline ASC
+    """, (user_id,)).fetchall()
+
+    connection.close()
+
+    return jsonify([dict(task) for task in tasks]), 200
+
+# Add a new task
+@app.route('/tasks', methods=['POST'])
+def add_task():
+    data = request.get_json(silent=True) or {}
+
+    user_id = data.get('user_id')
+    subject_id = data.get('subject_id')
+    task_name = data.get('task_name', '').strip()
+    deadline = data.get('deadline', '').strip()
+
+    if not user_id or not subject_id or not task_name or not deadline:
+        return jsonify({"message": "All fields are required"}), 400
+
+    connection = get_db_connection()
+
+    subject = connection.execute(
+        "SELECT subject_id FROM subjects WHERE subject_id = ? AND user_id = ?",
+        (subject_id, user_id)
+    ).fetchone()
+
+    if not subject:
+        connection.close()
+        return jsonify({"message": "Invalid subject"}), 400
+
+    connection.execute(
+        "INSERT INTO tasks (subject_id, task_name, deadline) VALUES (?, ?, ?)",
+        (subject_id, task_name, deadline)
+    )
+
+    connection.commit()
+    connection.close()
+
+    return jsonify({"message": "Task added successfully!"}), 201
+
+# Update task completion status
+@app.route('/tasks/<int:task_id>', methods=['PUT'])
+def update_task(task_id):
+    data = request.get_json(silent=True) or {}
+
+    user_id = data.get('user_id')
+    completed = data.get('completed')
+
+    if user_id is None or completed not in [0, 1]:
+        return jsonify({"message": "Invalid data"}), 400
+
+    connection = get_db_connection()
+
+    cursor = connection.execute("""
+        UPDATE tasks
+        SET completed = ?
+        WHERE task_id = ?
+        AND subject_id IN (
+            SELECT subject_id FROM subjects WHERE user_id = ?
+        )
+    """, (completed, task_id, user_id))
+
+    connection.commit()
+    connection.close()
+
+    if cursor.rowcount == 0:
+        return jsonify({"message": "Task not found"}), 404
+
+    return jsonify({"message": "Task updated successfully!"}), 200
+
+# Delete a task
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    data = request.get_json(silent=True) or {}
+    user_id = data.get('user_id')
+
+    if not user_id:
+        return jsonify({"message": "User ID is required"}), 400
+
+    connection = get_db_connection()
+
+    cursor = connection.execute("""
+        DELETE FROM tasks
+        WHERE task_id = ?
+        AND subject_id IN (
+            SELECT subject_id FROM subjects WHERE user_id = ?
+        )
+    """, (task_id, user_id))
+
+    connection.commit()
+    connection.close()
+
+    if cursor.rowcount == 0:
+        return jsonify({"message": "Task not found"}), 404
+
+    return jsonify({"message": "Task deleted successfully!"}), 200
 
 @app.route('/')
 def home():
