@@ -1,9 +1,8 @@
 
-const API_URL = 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 let csrfToken = null
 
-// Get a CSRF token from the backend.
 async function getCsrfToken() {
   const response = await fetch(`${API_URL}/csrf-token`, {
     method: 'GET',
@@ -20,7 +19,6 @@ async function getCsrfToken() {
   return csrfToken
 }
 
-// Send requests to the backend.
 export async function apiRequest(path, options = {}) {
   const method = (options.method || 'GET').toUpperCase()
 
@@ -43,13 +41,11 @@ export async function apiRequest(path, options = {}) {
     credentials: 'include'
   })
 
-  // Login creates a new session and a new CSRF token.
   if (path === '/login' && response.ok) {
     const data = await response.clone().json()
     csrfToken = data.csrf_token
   }
 
-  // Logout ends the session.
   if (path === '/logout' && response.ok) {
     csrfToken = null
   }
@@ -57,7 +53,6 @@ export async function apiRequest(path, options = {}) {
   return response
 }
 
-// Restore the current login after a page refresh.
 export async function getCurrentUser() {
   const response = await apiRequest('/me')
 
